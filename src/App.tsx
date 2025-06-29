@@ -8,20 +8,30 @@ import { supabase } from '@/integrations/supabase/client';
 
 export default function App() {
   const [session, setSession] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
 
-    supabase.auth.onAuthStateChange((_event, session) => setSession(session));
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
   }, []);
+
+  if (loading) return <div className="p-4">Loading...</div>;
 
   return (
     <Router>
       <Routes>
         {!session ? (
-          <>
-            <Route path="*" element={<Login />} />
-          </>
+          <Route path="*" element={<Login />} />
         ) : (
           <>
             <Route path="/" element={<Index />} />
