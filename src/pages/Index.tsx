@@ -48,9 +48,8 @@ const Index = () => {
   };
 
   async function uploadAudio(audioBlob: Blob): Promise<string | null> {
-    const filePath = `audio/${Date.now()}.webm`; // 'audio/' is optional folder inside bucket
-
-    const { data, error } = await supabase.storage.from('recordings').upload(filePath, audioBlob, {
+    const fileName = `${Date.now()}.webm`;
+    const { data, error } = await supabase.storage.from('recordings').upload(`public/${fileName}`, audioBlob, {
       contentType: 'audio/webm',
     });
 
@@ -59,8 +58,8 @@ const Index = () => {
       return null;
     }
 
-    const { data: publicUrlData } = supabase.storage.from('recordings').getPublicUrl(filePath);
-    return publicUrlData?.publicUrl || null;
+    const { publicUrl } = supabase.storage.from('recordings').getPublicUrl(`public/${fileName}`);
+    return publicUrl || null;
   }
 
   const handleTranscribeAndSave = async () => {
