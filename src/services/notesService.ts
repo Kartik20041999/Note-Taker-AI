@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Note {
@@ -13,6 +12,12 @@ export interface Note {
 export class NotesService {
   static async saveNote(text: string, summary?: string, audioUrl?: string): Promise<{ data: Note | null; error: any }> {
     try {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+
+      if (userError || !userData?.user?.id) {
+        throw new Error('User not authenticated');
+      }
+
       const { data, error } = await supabase
         .from('notes')
         .insert([
@@ -20,6 +25,7 @@ export class NotesService {
             text,
             summary,
             audio_url: audioUrl,
+            user_id: userData.user.id
           }
         ])
         .select()
