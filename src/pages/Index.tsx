@@ -49,7 +49,7 @@ const Index = () => {
 
   async function uploadAudio(audioBlob: Blob): Promise<string | null> {
     const fileName = `${Date.now()}.webm`;
-    const { data, error } = await supabase.storage.from('recordings').upload(fileName, audioBlob, {
+    const { error } = await supabase.storage.from('recordings').upload(fileName, audioBlob, {
       contentType: 'audio/webm',
     });
 
@@ -146,6 +146,7 @@ const Index = () => {
         setSummaryText('');
       }
     } catch (error) {
+      console.error('Unexpected error:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred.",
