@@ -49,17 +49,24 @@ const Index = () => {
 
   async function uploadAudio(audioBlob: Blob): Promise<string | null> {
     const fileName = `${Date.now()}.webm`;
-    const { data, error } = await supabase.storage.from('recordings').upload(`public/${fileName}`, audioBlob, {
+    const { data, error } = await supabase.storage.from('recordings').upload(fileName, audioBlob, {
       contentType: 'audio/webm',
+      cacheControl: '3600',
+      upsert: false
     });
 
     if (error) {
       console.error('Audio upload failed:', error);
+      toast({
+        title: "Audio Upload Failed",
+        description: "Please try again.",
+        variant: "destructive",
+      });
       return null;
     }
 
-    const { publicUrl } = supabase.storage.from('recordings').getPublicUrl(`public/${fileName}`);
-    return publicUrl || null;
+    const { data: publicUrlData } = supabase.storage.from('recordings').getPublicUrl(fileName);
+    return publicUrlData?.publicUrl || null;
   }
 
   const handleTranscribeAndSave = async () => {
@@ -116,11 +123,6 @@ const Index = () => {
       const audioUrl = await uploadAudio(audioBlob);
 
       if (!audioUrl) {
-        toast({
-          title: "Upload Failed",
-          description: "Could not upload audio recording.",
-          variant: "destructive",
-        });
         return;
       }
 
