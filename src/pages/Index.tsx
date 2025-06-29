@@ -48,24 +48,18 @@ const Index = () => {
   };
 
   async function uploadAudio(audioBlob: Blob): Promise<string | null> {
-    const fileName = `${crypto.randomUUID()}.webm`;
+    const filePath = `audio/${Date.now()}.webm`; // 'audio/' is optional folder inside bucket
 
-    const { data, error } = await supabase.storage
-      .from('recordings')
-      .upload(fileName, audioBlob, {
-        contentType: 'audio/webm',
-        upsert: false,
-      });
+    const { data, error } = await supabase.storage.from('recordings').upload(filePath, audioBlob, {
+      contentType: 'audio/webm',
+    });
 
     if (error) {
       console.error('Audio upload failed:', error);
       return null;
     }
 
-    const { data: publicUrlData } = supabase.storage
-      .from('recordings')
-      .getPublicUrl(fileName);
-
+    const { data: publicUrlData } = supabase.storage.from('recordings').getPublicUrl(filePath);
     return publicUrlData?.publicUrl || null;
   }
 
