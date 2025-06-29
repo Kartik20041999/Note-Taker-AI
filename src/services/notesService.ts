@@ -12,12 +12,6 @@ export interface Note {
 export class NotesService {
   static async saveNote(text: string, summary?: string, audioUrl?: string): Promise<{ data: Note | null; error: any }> {
     try {
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-
-      if (userError || !userData?.user?.id) {
-        throw new Error('User not authenticated');
-      }
-
       const { data, error } = await supabase
         .from('notes')
         .insert([
@@ -25,15 +19,18 @@ export class NotesService {
             text,
             summary,
             audio_url: audioUrl,
-            user_id: userData.user.id
           }
         ])
         .select()
         .single();
 
+      if (error) {
+        console.error('Error saving note:', error);
+      }
+
       return { data, error };
     } catch (error) {
-      console.error('Error saving note:', error);
+      console.error('Unexpected error saving note:', error);
       return { data: null, error };
     }
   }
@@ -45,9 +42,13 @@ export class NotesService {
         .select('*')
         .order('created_at', { ascending: false });
 
+      if (error) {
+        console.error('Error fetching notes:', error);
+      }
+
       return { data, error };
     } catch (error) {
-      console.error('Error fetching notes:', error);
+      console.error('Unexpected error fetching notes:', error);
       return { data: null, error };
     }
   }
@@ -59,9 +60,13 @@ export class NotesService {
         .delete()
         .eq('id', id);
 
+      if (error) {
+        console.error('Error deleting note:', error);
+      }
+
       return { error };
     } catch (error) {
-      console.error('Error deleting note:', error);
+      console.error('Unexpected error deleting note:', error);
       return { error };
     }
   }
@@ -75,9 +80,13 @@ export class NotesService {
         .select()
         .single();
 
+      if (error) {
+        console.error('Error updating note:', error);
+      }
+
       return { data, error };
     } catch (error) {
-      console.error('Error updating note:', error);
+      console.error('Unexpected error updating note:', error);
       return { data: null, error };
     }
   }
